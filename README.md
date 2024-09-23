@@ -1,6 +1,76 @@
 # Entity Framework Core in .NET 8.0
 
+https://unitcoding.com/ef-core-relationships/
+
+https://medium.com/c-sharp-programming/relationships-in-entity-framework-core-6bea347a51e4
+
 https://github.com/Osempu/BlogAPI
+
+https://github.com/Osempu/BlogAPI/tree/SerilogLogging
+
+https://github.com/Osempu/BlogAPI/tree/FluentValidation
+
+
+# Samples
+
+## Update your Database 
+```
+dotnet ef migrations add "Added new entities and applied relationships"
+dotnet ef database update
+```
+
+## DTOs
+```
+public record AddPostDTO(string Title, string Body, int AuthorId);
+public record EditPostDTO(int Id, string Title, string Body, int AuthorId);
+```
+
+## Configure the Entities Relationships
+```
+  public class PostConfiguration : IEntityTypeConfiguration<Post>
+  {
+      public void Configure(EntityTypeBuilder<Post> builder)
+      {
+          builder.HasOne( p => p.Author)
+              .WithMany( a => a.Posts)
+              .HasForeignKey( p => p.AuthorId);
+          builder.HasMany( p => p.Tags)
+              .WithMany( t => t.Posts)
+              .UsingEntity( j => j.ToTable("PostTag"));
+					//Data seeding ** this is not used for relationship configuration **
+          builder.HasData(
+              new Post {Id = 1, Author = new Author {Id = 1, Name = "Oscar Montenegro"}, Title = "My first Post", Body = "Hello world, this is my first post"},
+              new Post {Id = 2, Author = new Author {Id = 2, Name = "Another Author"}, Title = "My second Post", Body = "Hello world, this is my second post"}
+          );
+      }
+   }
+```
+
+## Update Post model
+```
+public class Post
+{
+    public int Id { get; set; }
+    public string Title { get; set; }
+    public string Body { get; set; }
+    public DateTime CreatedDate { get; set; }
+    public DateTime LastUpdated { get; set; }
+    public int AuthorId { get; set; }
+    public Author Author { get; set; }
+    public ICollection<Tag> Tags { get; set; }
+}
+```
+
+## Tag model
+```
+public class Tag
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Description { get; set; }
+    public ICollection<Post> Posts { get; set; }
+}
+```
 
 # Configurations in Entity Framework Core
 
